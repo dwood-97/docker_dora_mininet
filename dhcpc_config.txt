@@ -1,5 +1,0 @@
-# This file's contents will be appended to dhcpcd.conf
-interface wlan0
-# pick some static IP, this is the subnet we'll serve dora on
-static ip_address=192.168.5.1/24 
-nohook wpa_supplicant
