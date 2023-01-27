@@ -13,7 +13,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update && \
     tcpdump \
     vim \
     git \
-    python3 \
     net-tools \
     iputils-ping \
     ifupdown \
@@ -21,6 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update && \
     bridge-utils \
     iptables \
     sudo \
+    python3 \
     curl \
     gettext \
     gcc \
@@ -51,8 +51,7 @@ ENV CARGO_HOME=/usr/local/cargo
 ENV PATH=$CARGO_HOME/bin:$PATH
 
 # Install the sqlx-cli tool and run database migrations for Dora
-RUN git clone https://github.com/mininet/mininet; \
-    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh \
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh \
     -s -- -y; \
     cargo install sqlx-cli; \
     cd dora; \
@@ -64,7 +63,8 @@ RUN cd dora; \
     cargo build --release; \
     cp target/release/dora .; \
     chmod +x dora; \
-    cd ..;
+    cd ../ \
+    git clone https://github.com/mininet/mininet
 
 EXPOSE 6633 6653 6640
 
