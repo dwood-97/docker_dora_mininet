@@ -1,7 +1,44 @@
-FROM rust:1.66.0-buster
+FROM ubuntu:18.04
 
 # Set the working directory
-WORKDIR /app
+USER root
+WORKDIR /root
+
+COPY ENTRYPOINT.sh /
+
+# Install required packages
+RUN DEBIAN_FRONTEND=noninteractive apt-get -qq update && \
+    DEBIAN_FRONTEND=noninteractive apt-get -qq install \
+    dnsutils \
+    tcpdump \
+    vim \
+    git \
+    python3 \
+    net-tools \
+    iputils-ping \
+    ifupdown \
+    hostapd \
+    bridge-utils \
+    iptables \
+    sudo \
+    curl \
+    gettext \
+    gcc \
+    iproute2 \
+    libssl-dev \
+    libdbus-1-dev \
+    libidn11-dev \
+    libnetfilter-conntrack-dev \
+    mininet \
+    netfilter-persistent \
+    nettle-dev \
+    openvswitch-switch \
+    openvswitch-testcontroller \
+    x11-xserver-utils \
+    xterm \
+    && rm -rf /var/lib/apt/lists/* \
+    && touch /etc/network/interfaces \
+    && chmod +x /ENTRYPOINT.sh
 
 # Copy the necessary files into the image
 COPY cargo.* ./ \
@@ -9,31 +46,15 @@ COPY cargo.* ./ \
     *.txt dora/ \
     dora_config.yaml dora/
 
-# Install required packages
-RUN apt-get -qq update; \
-    apt-get -qq install \
-    hostapd \
-    bridge-utils \
-    iptables \
-    sudo \
-    gettext \
-    libdbus-1-dev \
-    libidn11-dev \
-    libnetfilter-conntrack-dev \
-    nettle-dev \
-    netfilter-persistent;
-
-# Set up the AP and configure network routing
-USER root
-RUN mv dora/ap_config.txt /etc/hostapd/hostapd.conf; \
-    cat dora/dhcpc_config.txt >> /etc/dhcpcd.conf; \
-    echo "net.ipv4.ip_forward=1\nnet.ipv6.conf.all.forwarding=1" >> /etc/sysctl.d/99-sysctl.conf; \
-    iptables -t nat -N MASQUERADE; \
-    iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE; \
-    netfilter-persistent save;
+# Set up environment variables
+ENV CARGO_HOME=/usr/local/cargo
+ENV PATH=$CARGO_HOME/bin:$PATH
 
 # Install the sqlx-cli tool and run database migrations for Dora
-RUN cargo install sqlx-cli; \
+RUN git clone https://github.com/mininet/mininet; \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh \
+    -s -- -y; \
+    cargo install sqlx-cli; \
     cd dora; \
     sqlx database create; \
     sqlx migrate run;
@@ -42,6 +63,11 @@ RUN cargo install sqlx-cli; \
 RUN cd dora; \
     cargo build --release; \
     cp target/release/dora .; \
-    chmod +x dora;
+    chmod +x dora; \
+    cd ..;
+
+EXPOSE 6633 6653 6640
+
+ENTRYPOINT ["/ENTRYPOINT.sh"]
 
 CMD ["./dora"]
