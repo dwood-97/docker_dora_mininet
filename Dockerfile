@@ -63,12 +63,14 @@ RUN cd dora; \
     cargo build --release; \
     cp target/release/dora .; \
     chmod +x dora; \
-    cd ../ \
-    git clone https://github.com/mininet/mininet
+    cd ../; \
+    mkdir /var/lib/dora; \
+    touch /var/lib/dora/config.yaml; \
+    cat dora/docker_config.yaml > /var/lib/dora/config.yaml; \
+    git clone https://github.com/mininet/mininet; 
 
 EXPOSE 6633 6653 6640
 
 ENTRYPOINT ["/ENTRYPOINT.sh"]
 
 CMD ["./dora"]
-
