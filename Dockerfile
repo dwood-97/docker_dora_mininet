@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:18.04
 
 # Set the working directory
 USER root
@@ -71,3 +71,4 @@ EXPOSE 6633 6653 6640
 ENTRYPOINT ["/ENTRYPOINT.sh"]
 
 CMD ["./dora"]
+
